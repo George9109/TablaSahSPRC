@@ -130,4 +130,40 @@
   <data name="poza de fundal" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\poza de fundal.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="cal" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\cal.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CalAlb" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CalAlb.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="nebun" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\nebun.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="NebunAlb" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\NebunAlb.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Pion" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Pion.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PionAlb" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PionAlb.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Rege" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Rege.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="RegeAlb" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\RegeAlb.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Regina" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Regina.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ReginaAlba" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ReginaAlba.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Turn" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Turn.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="TurnAlb" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\TurnAlb.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
 </root>
