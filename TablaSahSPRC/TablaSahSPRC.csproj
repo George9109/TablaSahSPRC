@@ -66,6 +66,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Cal.cs" />
+    <Compile Include="ConexiuneServer.cs" />
     <Compile Include="CuloarePiesa.cs" />
     <Compile Include="Joc.cs">
       <SubType>Form</SubType>

@@ -21,12 +21,51 @@ namespace TablaSahSPRC
             InitializeComponent();
         }
 
-        private void btnJoaca_Click(object sender, EventArgs e)
+        // Adăugăm o variabilă pentru conexiune la nivelul meniului
+        private ConexiuneServer conexiune;
+
+        private async void btnJoaca_Click(object sender, EventArgs e)
         {
-            Joc jocForm = new Joc();
+            string cod = textBoxCod.Text.Trim();
+
+            // Verificăm dacă utilizatorul a introdus/generat un cod
+            if (string.IsNullOrEmpty(cod))
+            {
+                MessageBox.Show("Te rog să introduci sau să generezi un cod pentru lobby!", "Atenție");
+                return;
+            }
+
+            // 1. Inițializăm și pornim conexiunea
+            conexiune = new ConexiuneServer();
+
+            // Aici pui IP-ul și Portul serverului colegului tău. 
+            // Dacă rulați amândoi pe același laptop acum, IP-ul este mereu "127.0.0.1" (Localhost).
+            bool conectat = await conexiune.Conecteaza("10.66.2.179", 5000);
+            if (!conectat)
+            {
+                MessageBox.Show("Nu m-am putut conecta la server. Asigură-te că serverul colegului este PORNIT!", "Eroare Conexiune");
+                return;
+            }
+
+            // 2. Trimitem comanda în funcție de "Modul Curent" din interfața ta
+            if (modCurent == 0)
+                conexiune.TrimiteJoin(cod);
+            else if (modCurent == 1)
+                conexiune.TrimiteCreate(cod);
+            else if (modCurent == 2)
+                conexiune.TrimiteSpectate(cod);
+
+            // 3. Predăm ștafeta: Deschidem jocul și îi oferim conexiunea gata făcută!
+            Joc jocForm = new Joc(conexiune, modCurent, cod);
+
             this.Hide();
-            jocForm.ShowDialog();
+            jocForm.ShowDialog(); // Aici programul "pauzează" meniul cât timp te joci
+
+            // Când închizi fereastra de joc (X sau "Ieși din joc"), te întorci aici
             this.Show();
+
+            // Închidem frumos conexiunea cu serverul ca să nu lăsăm fantome
+            conexiune.TrimiteClose();
         }
 
         private void Meniu_Load(object sender, EventArgs e)
@@ -46,7 +85,7 @@ namespace TablaSahSPRC
             UpdateUI();
         }
 
-        // 🔥 FUNCTIA PRINCIPALA
+        //  FUNCTIA PRINCIPALA
         void UpdateUI()
         {
             // Reset text
@@ -96,7 +135,7 @@ namespace TablaSahSPRC
 
             string cod = "";
 
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 5; i++)
             {
                 cod += chars[rnd.Next(chars.Length)];
             }
