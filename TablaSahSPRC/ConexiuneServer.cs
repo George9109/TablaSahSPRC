@@ -110,9 +110,10 @@ namespace TablaSahSPRC
                     if (parti.Length > 1) OnChatReceived?.Invoke(comanda, parti[1]);
                     break;
 
-                // Nu a specificat în "primesti", dar sigur serverul va trimite înapoi "UPDATE" celuilalt jucător!
-                case "UPDATE":
-                    if (parti.Length > 2) OnTablaUpdate?.Invoke(parti[2]); // parti[2] ar fi vectorTabla
+                // Serverul colegului trimite UPDATE_SUCCESS|vectorTabla
+                case "UPDATE_SUCCESS":
+                    // Deoarece trimite doar 2 bucăți despărțite de '|', vectorul e pe poziția 1
+                    if (parti.Length > 1) OnTablaUpdate?.Invoke(parti[1]);
                     break;
             }
         }

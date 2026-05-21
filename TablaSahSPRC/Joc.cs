@@ -65,8 +65,16 @@ namespace TablaSahSPRC
                 ActualizeazaTablaDinString(vectorPrimit);
                 // === NOU: TRIMITEM TABLA CĂTRE ADVERSAR ===
                 string stareNoua = ConversieTablaInString();
-                serverNostru.TrimiteUpdate(lobbyCode, stareNoua);
+                if (serverNostru != null)
+                {
+                    serverNostru.TrimiteUpdate(lobbyCode, stareNoua);
+                }
 
+                // SCHIMBĂM RÂNDUL
+                if (randulCurent == CuloarePiesa.Alb)
+                    randulCurent = CuloarePiesa.Negru;
+                else
+                    randulCurent = CuloarePiesa.Alb;
                 // SCHIMBĂM RÂNDUL
                 if (randulCurent == CuloarePiesa.Alb)
                     // Schimbăm rândul după ce adversarul a mutat
