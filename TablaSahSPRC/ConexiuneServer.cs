@@ -113,14 +113,24 @@ namespace TablaSahSPRC
 
                 // Cazul pentru Chat-ul Online (Global)
                 case "CHAT_GLOBAL":
-                    // parti[1] conține textul deja formatat de server: "Nume: Mesaj"
-                    if (parti.Length > 1) OnChatGlobalReceived?.Invoke(parti[1]);
+                case "CHAT_MSG": // În caz că serverul folosește vechiul nume
+                    if (parti.Length > 1)
+                    {
+                        // Unim înapoi absolut toate bucățile trimise de server, 
+                        // în caz că mesajul conține la rândul lui alte caractere '|'
+                        string mesajAdevărat = string.Join(" ", parti, 1, parti.Length - 1);
+                        OnChatGlobalReceived?.Invoke(mesajAdevărat);
+                    }
                     break;
 
                 // Cazul pentru Chat-ul Privat
                 case "CHAT_PRIVATE_MESSAGE":
-                    // parti[1] conține textul deja formatat de server: "Nume: Mesaj"
-                    if (parti.Length > 1) OnChatPrivateReceived?.Invoke(parti[1]);
+                    if (parti.Length > 1)
+                    {
+                        // Unim înapoi absolut toate bucățile trimise de server
+                        string mesajAdevărat = string.Join(" ", parti, 1, parti.Length - 1);
+                        OnChatPrivateReceived?.Invoke(mesajAdevărat);
+                    }
                     break;
             }
         }

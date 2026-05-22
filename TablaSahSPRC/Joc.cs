@@ -629,9 +629,9 @@ namespace TablaSahSPRC
         {
             this.Invoke((MethodInvoker)delegate {
 
-                // Dacă mesajul începe exact cu numele tău, este propriul tău mesaj care s-a întors de la server (Ecoul).
-                // Îl ignorăm, pentru că atunci când ai apăsat butonul "Trimite", l-ai scris deja pe ecran cu "[Tu]:".
-                if (mesajComplet.StartsWith(numeleMeu + ":"))
+                // Folosim "Contains" în loc de "StartsWith". Astfel, chiar dacă serverul 
+                // pune "Alb" în față, jocul tot se prinde că e mesajul tău și ignoră ecoul.
+                if (mesajComplet.Contains(numeleMeu + ":"))
                 {
                     return;
                 }
