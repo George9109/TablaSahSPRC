@@ -33,14 +33,16 @@ namespace TablaSahSPRC
 
         private string lobbyCode;
         private CuloarePiesa culoareaMea;
+        private string numeleMeu; 
 
-        public Joc(ConexiuneServer conexiune, int modCurent, string cod)
+        public Joc(ConexiuneServer conexiune, int modCurent, string cod, string numeUtilizator)
         {
             InitializeComponent();
 
             this.serverNostru = conexiune;
             this.modJocCurent = modCurent;
             this.lobbyCode = cod; // Salvăm codul
+            this.numeleMeu = numeUtilizator; // Salvăm numele pentru mai târziu
 
             // Stabilim culoarea în funcție de cine ești
             if (modCurent == 1) // 1 = Creare Joc -> Tu ești Albul
@@ -54,31 +56,29 @@ namespace TablaSahSPRC
             AseazaPieseleInitiale();
 
             serverNostru.OnTablaUpdate += PrimesteUpdateDeLaAdversar;
+            // Ne abonăm la noile evenimente de Chat
+            serverNostru.OnChatPrivateReceived += PrimesteMesajPrivat;
+            serverNostru.OnChatGlobalReceived += PrimesteMesajGlobal;
         }
 
         // Funcția care se activează automat când serverul trimite noul vector de la adversar
         private void PrimesteUpdateDeLaAdversar(string vectorPrimit)
         {
-            // Deoarece mesajele de rețea vin pe alt fir de execuție, 
-            // folosim Invoke pentru a actualiza interfața grafică în siguranță
             this.Invoke((MethodInvoker)delegate {
-                ActualizeazaTablaDinString(vectorPrimit);
-                // === NOU: TRIMITEM TABLA CĂTRE ADVERSAR ===
-                string stareNoua = ConversieTablaInString();
-                if (serverNostru != null)
+
+                // 1. Verificăm dacă mutarea primită este deja pe tabla noastră (Ecoul propriei mutări)
+                string stareaMea = ConversieTablaInString();
+                if (stareaMea == vectorPrimit)
                 {
-                    serverNostru.TrimiteUpdate(lobbyCode, stareNoua);
+                    // Este propria noastră mutare returnată de server. O ignorăm complet!
+                    return;
                 }
 
-                // SCHIMBĂM RÂNDUL
+                // 2. Dacă am ajuns aici, înseamnă că vectorul e diferit, deci adversarul a mutat!
+                ActualizeazaTablaDinString(vectorPrimit);
+
+                // 3. Schimbăm rândul doar atunci când mută el
                 if (randulCurent == CuloarePiesa.Alb)
-                    randulCurent = CuloarePiesa.Negru;
-                else
-                    randulCurent = CuloarePiesa.Alb;
-                // SCHIMBĂM RÂNDUL
-                if (randulCurent == CuloarePiesa.Alb)
-                    // Schimbăm rândul după ce adversarul a mutat
-                    if (randulCurent == CuloarePiesa.Alb)
                     randulCurent = CuloarePiesa.Negru;
                 else
                     randulCurent = CuloarePiesa.Alb;
@@ -192,6 +192,7 @@ namespace TablaSahSPRC
                     }
                 }
             }
+
             // CAZUL 2: Avem deja o piesă selectată -> Vrem să o mutăm unde am dat click acum
             else
             {
@@ -246,6 +247,23 @@ namespace TablaSahSPRC
                         }
                     }
 
+                    // ==========================================================
+                    // === NOU: TRIMITEM TABLA CĂTRE ADVERSAR (DUPĂ PROMOVARE) ===
+                    // ==========================================================
+                    string stareNoua = ConversieTablaInString();
+
+                    if (serverNostru != null)
+                    {
+                        serverNostru.TrimiteUpdate(lobbyCode, stareNoua);
+                        // Oprim temporar jocul cu un mesaj ca să vezi tu că pachetul pleacă sigur din funcție
+                        MessageBox.Show("Am trimis la server: " + stareNoua, "Test Rețea");
+                    }
+                    else
+                    {
+                        MessageBox.Show("EROARE: serverNostru este NULL! Conexiunea s-a pierdut pe drum.");
+                    }
+                    // ==========================================================
+
                     // SCHIMBĂM RÂNDUL
                     if (randulCurent == CuloarePiesa.Alb)
                         randulCurent = CuloarePiesa.Negru;
@@ -280,6 +298,11 @@ namespace TablaSahSPRC
                         // Are mutări + E în Șah = Doar ȘAH
                         MessageBox.Show("ȘAH!", "Atenție");
                     }
+                }
+                else
+                {
+                    // Mutarea matematică a fost ilegală
+                    ResetareCuloareSelectie();
                 }
             }
         }
@@ -511,7 +534,12 @@ namespace TablaSahSPRC
             {
                 for (int j = 0; j < 8; j++)
                 {
-                    int codPiesa = int.Parse(valori[index]);
+                    // Curățăm textul de eventuale spații sau rânduri noi ascunse
+                    string textPiesa = valori[index].Trim();
+                    int codPiesa = 0;
+
+                    // TryParse e varianta sigură: dacă textul e stricat, nu dă Crash, ci pune valoarea 0 (pătrățel gol)
+                    int.TryParse(textPiesa, out codPiesa);
                     index++;
 
                     // Curățăm pătrățelul curent
@@ -558,6 +586,60 @@ namespace TablaSahSPRC
         private void Joc_Load(object sender, EventArgs e)
         {
             // Păstrat pentru eventuale inițializări la încărcarea form-ului
+        }
+
+        private void btnTrimitMesajPrivat_Click(object sender, EventArgs e)
+        {
+            if (!string.IsNullOrWhiteSpace(richTextBoxTrimitMesajPrivat.Text) && serverNostru != null)
+            {
+                // Trimitem mesajul privat doar în camera noastră
+                serverNostru.TrimiteChatPrivate(lobbyCode, numeleMeu, richTextBoxTrimitMesajPrivat.Text);
+
+                // Îl scriem imediat și pe ecranul nostru, ca să vedem ce am trimis
+                richTextBoxChatPrivat.AppendText($"[Tu]: {richTextBoxTrimitMesajPrivat.Text}\n");
+                richTextBoxChatPrivat.ScrollToCaret(); // Dă scroll automat la ultimul mesaj
+
+                // Golim căsuța de scris
+                richTextBoxTrimitMesajPrivat.Clear();
+            }
+        }
+
+        private void btnTrimiteMesajPublic_Click(object sender, EventArgs e)
+        {
+            if (!string.IsNullOrWhiteSpace(richTextBoxTrimiteMesajPublic.Text) && serverNostru != null)
+            {
+                // Trimitem mesajul la server
+                serverNostru.TrimiteChat(lobbyCode, numeleMeu, richTextBoxTrimiteMesajPublic.Text);
+
+                // Golim căsuța de scris
+                richTextBoxTrimiteMesajPublic.Clear();
+            }
+        }
+        private void PrimesteMesajGlobal(string mesajComplet)
+        {
+            // Folosim Invoke pentru a nu bloca interfața!
+            this.Invoke((MethodInvoker)delegate {
+                // Serverul trimite deja "Nume: Mesaj", deci noi adăugăm doar tag-ul de [Online]
+                richTextBoxChatPublic.AppendText($"[Online] {mesajComplet}\n");
+                richTextBoxChatPublic.ScrollToCaret(); // Menține chatul mereu jos
+            });
+        }
+
+        private void PrimesteMesajPrivat(string mesajComplet)
+        {
+            this.Invoke((MethodInvoker)delegate {
+
+                // Dacă mesajul începe exact cu numele tău, este propriul tău mesaj care s-a întors de la server (Ecoul).
+                // Îl ignorăm, pentru că atunci când ai apăsat butonul "Trimite", l-ai scris deja pe ecran cu "[Tu]:".
+                if (mesajComplet.StartsWith(numeleMeu + ":"))
+                {
+                    return;
+                }
+
+                // Dacă vine de la adversar, îl afișăm normal!
+                richTextBoxChatPrivat.AppendText($"[Privat] {mesajComplet}\n");
+                richTextBoxChatPrivat.ScrollToCaret(); // Dă scroll automat
+            });
         }
     }
 }

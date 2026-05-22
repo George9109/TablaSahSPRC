@@ -2,7 +2,6 @@
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace TablaSahSPRC
 {
@@ -11,11 +10,16 @@ namespace TablaSahSPRC
         private TcpClient client;
         private NetworkStream stream;
 
-        // EVENIMENTE: Așa anunțăm interfața grafică că am primit ceva de la server
+        // ==========================================
+        // EVENIMENTE (Cum anunțăm interfața grafică)
+        // ==========================================
         public event Action<string> OnWaiting;
         public event Action<string> OnOpponentDisconnected;
-        public event Action<string, string> OnChatReceived;
-        public event Action<string> OnTablaUpdate; // Pentru când primim vectorTabla
+        public event Action<string> OnTablaUpdate;
+
+        // Evenimentele noi pentru Chat (Așteaptă un singur string care conține "Nume: Mesaj")
+        public event Action<string> OnChatPrivateReceived;
+        public event Action<string> OnChatGlobalReceived;
 
         public async Task<bool> Conecteaza(string ip, int port)
         {
@@ -35,85 +39,88 @@ namespace TablaSahSPRC
         }
 
         // ==========================================
-        // FUNCȚII DE TRIMIS (PRIMITIVELE COLEGULUI)
+        // FUNCȚII DE TRIMIS CĂTRE SERVER
         // ==========================================
 
         private async Task TrimiteText(string mesaj)
         {
             if (stream != null && client.Connected)
             {
-                byte[] dataToSend = Encoding.UTF8.GetBytes(mesaj);
+                // Adăugăm \n pentru a delimita clar pachetele pe rețea
+                byte[] dataToSend = Encoding.UTF8.GetBytes(mesaj + "\n");
                 await stream.WriteAsync(dataToSend, 0, dataToSend.Length);
+                await stream.FlushAsync(); // Forțăm golirea buffer-ului (evită întârzierile)
             }
         }
 
-        public void TrimiteCreate(string lobbyCode) => TrimiteText($"CREATE|{lobbyCode}");
-        public void TrimiteJoin(string lobbyCode) => TrimiteText($"JOIN|{lobbyCode}");
-        public void TrimiteStart(string lobbyCode) => TrimiteText($"START|{lobbyCode}");
-        public void TrimiteClose() => TrimiteText("CLOSE");
-        public void TrimiteSpectate(string lobbyCode) => TrimiteText($"SPECTATE|{lobbyCode}");
+        // Am adăugat "_ =" pentru a scăpa de avertizările (Warnings) din Visual Studio
+        public void TrimiteCreate(string lobbyCode) { _ = TrimiteText($"CREATE|{lobbyCode}"); }
+        public void TrimiteJoin(string lobbyCode) { _ = TrimiteText($"JOIN|{lobbyCode}"); }
+        public void TrimiteStart(string lobbyCode) { _ = TrimiteText($"START|{lobbyCode}"); }
+        public void TrimiteClose() { _ = TrimiteText("CLOSE"); }
+        public void TrimiteSpectate(string lobbyCode) { _ = TrimiteText($"SPECTATE|{lobbyCode}"); }
+        public void TrimiteUpdate(string lobbyCode, string vectorTabla) { _ = TrimiteText($"UPDATE|{lobbyCode}|{vectorTabla}"); }
 
-        // Aici va trebui să transformăm tablaLogica într-un text (vector) și să o trimitem
-        public void TrimiteUpdate(string lobbyCode, string vectorTabla) => TrimiteText($"UPDATE|{lobbyCode}|{vectorTabla}");
-
-        public void TrimiteChat(string lobbyCode, string mesaj) => TrimiteText($"CHAT|{lobbyCode}|{mesaj}");
-        public void TrimiteChatPrivate(string lobbyCode, string mesaj) => TrimiteText($"CHAT_PRIVATE|{lobbyCode}|{mesaj}");
-
+        // Funcțiile de chat
+        public void TrimiteChat(string lobbyCode, string nume, string mesaj) { _ = TrimiteText($"CHAT|{lobbyCode}|{nume}|{mesaj}"); }
+        public void TrimiteChatPrivate(string lobbyCode, string nume, string mesaj) { _ = TrimiteText($"CHAT_PRIVATE|{lobbyCode}|{nume}|{mesaj}"); }
 
         // ==========================================
-        // FUNCȚII DE PRIMIT (CE NE RĂSPUNDE SERVERUL)
+        // FUNCȚII DE PRIMIT DE LA SERVER
         // ==========================================
 
         private async Task AscultaMesaje()
         {
-            byte[] buffer = new byte[4096]; // Buffer un pic mai mare pentru vectorTabla
+            byte[] buffer = new byte[4096];
             try
             {
                 while (true)
                 {
                     int bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
-                    if (bytesRead == 0) break; // Conexiune închisă
+                    if (bytesRead == 0) break; // Conexiune închisă de server
 
                     string mesajPrimit = Encoding.UTF8.GetString(buffer, 0, bytesRead);
 
-                    // Uneori serverul poate trimite mai multe mesaje lipite, le despărțim (dacă va fi cazul)
+                    // Procesăm mesajul curățat de spații în plus
                     ProceseazaMesaj(mesajPrimit.Trim());
                 }
             }
             catch (Exception)
             {
-                // Deconectat
+                // Deconectat sau eroare rețea
             }
         }
 
         private void ProceseazaMesaj(string mesajComplet)
         {
-            // Despărțim textul primit folosind caracterul '|'
             string[] parti = mesajComplet.Split('|');
             string comanda = parti[0];
 
             switch (comanda)
             {
                 case "WAITING":
-                    // Ex: WAITING|lobbyCode|
                     if (parti.Length > 1) OnWaiting?.Invoke(parti[1]);
                     break;
 
                 case "OPPONENT_DISCONNECTED":
-                    // Ex: OPPONENT_DISCONNECTED|mesaj
                     if (parti.Length > 1) OnOpponentDisconnected?.Invoke(parti[1]);
                     break;
 
-                case "CHAT_MSG":
-                case "CHAT_PRIVATE_MESSAGE":
-                    // Depinde cum îți trimite colegul restul textului, presupunem că pe poziția 1 e mesajul
-                    if (parti.Length > 1) OnChatReceived?.Invoke(comanda, parti[1]);
+                case "UPDATE_SUCCESS":
+                    // parti[1] va conține string-ul cu starea tablei
+                    if (parti.Length > 1) OnTablaUpdate?.Invoke(parti[1]);
                     break;
 
-                // Serverul colegului trimite UPDATE_SUCCESS|vectorTabla
-                case "UPDATE_SUCCESS":
-                    // Deoarece trimite doar 2 bucăți despărțite de '|', vectorul e pe poziția 1
-                    if (parti.Length > 1) OnTablaUpdate?.Invoke(parti[1]);
+                // Cazul pentru Chat-ul Online (Global)
+                case "CHAT_GLOBAL":
+                    // parti[1] conține textul deja formatat de server: "Nume: Mesaj"
+                    if (parti.Length > 1) OnChatGlobalReceived?.Invoke(parti[1]);
+                    break;
+
+                // Cazul pentru Chat-ul Privat
+                case "CHAT_PRIVATE_MESSAGE":
+                    // parti[1] conține textul deja formatat de server: "Nume: Mesaj"
+                    if (parti.Length > 1) OnChatPrivateReceived?.Invoke(parti[1]);
                     break;
             }
         }

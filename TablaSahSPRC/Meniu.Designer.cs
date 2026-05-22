@@ -32,7 +32,6 @@
             this.btnJoaca = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.textBoxCod = new System.Windows.Forms.TextBox();
-            this.btnConfirma = new System.Windows.Forms.Button();
             this.labelIntroduNumeUtilizator = new System.Windows.Forms.Label();
             this.textBoxUser = new System.Windows.Forms.TextBox();
             this.CreareIntroduUrmareste = new System.Windows.Forms.Label();
@@ -82,18 +81,6 @@
             this.textBoxCod.TabIndex = 2;
             this.textBoxCod.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             this.textBoxCod.TextChanged += new System.EventHandler(this.textBoxCod_TextChanged);
-            // 
-            // btnConfirma
-            // 
-            this.btnConfirma.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnConfirma.Font = new System.Drawing.Font("Segoe UI", 15F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(238)));
-            this.btnConfirma.Location = new System.Drawing.Point(103, 264);
-            this.btnConfirma.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.btnConfirma.Name = "btnConfirma";
-            this.btnConfirma.Size = new System.Drawing.Size(306, 48);
-            this.btnConfirma.TabIndex = 1;
-            this.btnConfirma.Text = "Confirma";
-            this.btnConfirma.UseVisualStyleBackColor = true;
             // 
             // labelIntroduNumeUtilizator
             // 
@@ -224,7 +211,6 @@
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             this.ClientSize = new System.Drawing.Size(1708, 775);
             this.Controls.Add(this.btnIesiDinJoc);
-            this.Controls.Add(this.btnConfirma);
             this.Controls.Add(this.labelCreareJoc);
             this.Controls.Add(this.labelIntroduCod);
             this.Controls.Add(this.labelUrmaresteMeci);
@@ -253,7 +239,6 @@
         private System.Windows.Forms.Button btnJoaca;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TextBox textBoxCod;
-        private System.Windows.Forms.Button btnConfirma;
         private System.Windows.Forms.Label labelIntroduNumeUtilizator;
         private System.Windows.Forms.TextBox textBoxUser;
         private System.Windows.Forms.Label CreareIntroduUrmareste;

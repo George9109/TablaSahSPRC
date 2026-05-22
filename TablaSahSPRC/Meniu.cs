@@ -26,7 +26,18 @@ namespace TablaSahSPRC
 
         private async void btnJoaca_Click(object sender, EventArgs e)
         {
+
             string cod = textBoxCod.Text.Trim();
+            // --- 1. Preluăm și validăm numele ---
+            // Presupun că textbox-ul tău se numește textBoxNume. Dacă are alt nume, schimbă-l aici!
+            string numeUtilizator = textBoxUser.Text.Trim();
+
+            if (string.IsNullOrEmpty(numeUtilizator))
+            {
+                // Generăm nume random dacă nu a scris nimic
+                Random rnd = new Random();
+                numeUtilizator = "Player_" + rnd.Next(1000, 9999);
+            }
 
             // Verificăm dacă utilizatorul a introdus/generat un cod
             if (string.IsNullOrEmpty(cod))
@@ -56,7 +67,7 @@ namespace TablaSahSPRC
                 conexiune.TrimiteSpectate(cod);
 
             // 3. Predăm ștafeta: Deschidem jocul și îi oferim conexiunea gata făcută!
-            Joc jocForm = new Joc(conexiune, modCurent, cod);
+            Joc jocForm = new Joc(conexiune, modCurent, cod, numeUtilizator);
 
             this.Hide();
             jocForm.ShowDialog(); // Aici programul "pauzează" meniul cât timp te joci
