@@ -256,7 +256,7 @@ namespace TablaSahSPRC
                     {
                         serverNostru.TrimiteUpdate(lobbyCode, stareNoua);
                         // Oprim temporar jocul cu un mesaj ca să vezi tu că pachetul pleacă sigur din funcție
-                        MessageBox.Show("Am trimis la server: " + stareNoua, "Test Rețea");
+                       // MessageBox.Show("Am trimis la server: " + stareNoua, "Test Rețea");
                     }
                     else
                     {
@@ -595,10 +595,12 @@ namespace TablaSahSPRC
                 // Trimitem mesajul privat doar în camera noastră
                 serverNostru.TrimiteChatPrivate(lobbyCode, numeleMeu, richTextBoxTrimitMesajPrivat.Text);
 
-                // Îl scriem imediat și pe ecranul nostru, ca să vedem ce am trimis
-                richTextBoxChatPrivat.AppendText($"[Tu]: {richTextBoxTrimitMesajPrivat.Text}\n");
-                richTextBoxChatPrivat.ScrollToCaret(); // Dă scroll automat la ultimul mesaj
+                // NOU: Acum afișează culoarea ta pe ecranul tău, lângă [Tu]
+                string denumireCuloare = (culoareaMea == CuloarePiesa.Alb) ? "Alb" : "Negru";
+                richTextBoxChatPrivat.AppendText($"[Tu - {denumireCuloare}]: {richTextBoxTrimitMesajPrivat.Text}\n");
 
+
+                richTextBoxChatPrivat.ScrollToCaret(); // Dă scroll automat la ultimul mesaj
                 // Golim căsuța de scris
                 richTextBoxTrimitMesajPrivat.Clear();
             }
@@ -620,6 +622,16 @@ namespace TablaSahSPRC
             // Folosim Invoke pentru a nu bloca interfața!
             this.Invoke((MethodInvoker)delegate {
                 // Serverul trimite deja "Nume: Mesaj", deci noi adăugăm doar tag-ul de [Online]
+                // --- FILTRU DE DESIGN ---
+                string mesajFormatat = mesajComplet;
+
+                // Dacă serverul a lipit "Alb " la început, îl transformăm în "[Alb] "
+                if (mesajFormatat.StartsWith("Alb "))
+                    mesajFormatat = "[Alb] " + mesajFormatat.Substring(4);
+                // La fel pentru negru
+                else if (mesajFormatat.StartsWith("Negru "))
+                    mesajFormatat = "[Negru] " + mesajFormatat.Substring(6);
+                // -------------------------
                 richTextBoxChatPublic.AppendText($"[Online] {mesajComplet}\n");
                 richTextBoxChatPublic.ScrollToCaret(); // Menține chatul mereu jos
             });
@@ -635,6 +647,14 @@ namespace TablaSahSPRC
                 {
                     return;
                 }
+                // --- FILTRU DE DESIGN ---
+                string mesajFormatat = mesajComplet;
+
+                if (mesajFormatat.StartsWith("Alb "))
+                    mesajFormatat = "[Alb] " + mesajFormatat.Substring(4);
+                else if (mesajFormatat.StartsWith("Negru "))
+                    mesajFormatat = "[Negru] " + mesajFormatat.Substring(6);
+                // -------------------------
 
                 // Dacă vine de la adversar, îl afișăm normal!
                 richTextBoxChatPrivat.AppendText($"[Privat] {mesajComplet}\n");

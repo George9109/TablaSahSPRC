@@ -30,14 +30,14 @@
         {
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
-            this.tabPage2 = new System.Windows.Forms.TabPage();
-            this.btnPararesteJoc = new System.Windows.Forms.Button();
-            this.richTextBoxChatPrivat = new System.Windows.Forms.RichTextBox();
-            this.btnTrimitMesajPrivat = new System.Windows.Forms.Button();
             this.richTextBoxTrimitMesajPrivat = new System.Windows.Forms.RichTextBox();
+            this.btnTrimitMesajPrivat = new System.Windows.Forms.Button();
+            this.richTextBoxChatPrivat = new System.Windows.Forms.RichTextBox();
+            this.tabPage2 = new System.Windows.Forms.TabPage();
             this.richTextBoxTrimiteMesajPublic = new System.Windows.Forms.RichTextBox();
             this.btnTrimiteMesajPublic = new System.Windows.Forms.Button();
             this.richTextBoxChatPublic = new System.Windows.Forms.RichTextBox();
+            this.btnPararesteJoc = new System.Windows.Forms.Button();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
@@ -69,40 +69,14 @@
             this.tabPage1.Text = "Chat Privat";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
-            // tabPage2
+            // richTextBoxTrimitMesajPrivat
             // 
-            this.tabPage2.Controls.Add(this.richTextBoxTrimiteMesajPublic);
-            this.tabPage2.Controls.Add(this.btnTrimiteMesajPublic);
-            this.tabPage2.Controls.Add(this.richTextBoxChatPublic);
-            this.tabPage2.Location = new System.Drawing.Point(4, 25);
-            this.tabPage2.Name = "tabPage2";
-            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(274, 640);
-            this.tabPage2.TabIndex = 1;
-            this.tabPage2.Text = "Chat Online";
-            this.tabPage2.UseVisualStyleBackColor = true;
-            // 
-            // btnPararesteJoc
-            // 
-            this.btnPararesteJoc.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnPararesteJoc.Location = new System.Drawing.Point(1767, 12);
-            this.btnPararesteJoc.Name = "btnPararesteJoc";
-            this.btnPararesteJoc.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.btnPararesteJoc.Size = new System.Drawing.Size(145, 46);
-            this.btnPararesteJoc.TabIndex = 2;
-            this.btnPararesteJoc.Text = "Paraseste Joc";
-            this.btnPararesteJoc.UseVisualStyleBackColor = true;
-            this.btnPararesteJoc.Click += new System.EventHandler(this.btnPararesteJoc_Click);
-            // 
-            // richTextBoxChatPrivat
-            // 
-            this.richTextBoxChatPrivat.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left)));
-            this.richTextBoxChatPrivat.Location = new System.Drawing.Point(6, 6);
-            this.richTextBoxChatPrivat.Name = "richTextBoxChatPrivat";
-            this.richTextBoxChatPrivat.Size = new System.Drawing.Size(262, 469);
-            this.richTextBoxChatPrivat.TabIndex = 3;
-            this.richTextBoxChatPrivat.Text = "";
+            this.richTextBoxTrimitMesajPrivat.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.richTextBoxTrimitMesajPrivat.Location = new System.Drawing.Point(6, 481);
+            this.richTextBoxTrimitMesajPrivat.Name = "richTextBoxTrimitMesajPrivat";
+            this.richTextBoxTrimitMesajPrivat.Size = new System.Drawing.Size(262, 98);
+            this.richTextBoxTrimitMesajPrivat.TabIndex = 3;
+            this.richTextBoxTrimitMesajPrivat.Text = "";
             // 
             // btnTrimitMesajPrivat
             // 
@@ -115,14 +89,29 @@
             this.btnTrimitMesajPrivat.UseVisualStyleBackColor = true;
             this.btnTrimitMesajPrivat.Click += new System.EventHandler(this.btnTrimitMesajPrivat_Click);
             // 
-            // richTextBoxTrimitMesajPrivat
+            // richTextBoxChatPrivat
             // 
-            this.richTextBoxTrimitMesajPrivat.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.richTextBoxTrimitMesajPrivat.Location = new System.Drawing.Point(6, 481);
-            this.richTextBoxTrimitMesajPrivat.Name = "richTextBoxTrimitMesajPrivat";
-            this.richTextBoxTrimitMesajPrivat.Size = new System.Drawing.Size(262, 98);
-            this.richTextBoxTrimitMesajPrivat.TabIndex = 3;
-            this.richTextBoxTrimitMesajPrivat.Text = "";
+            this.richTextBoxChatPrivat.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
+            this.richTextBoxChatPrivat.Location = new System.Drawing.Point(6, 6);
+            this.richTextBoxChatPrivat.Name = "richTextBoxChatPrivat";
+            this.richTextBoxChatPrivat.ReadOnly = true;
+            this.richTextBoxChatPrivat.Size = new System.Drawing.Size(262, 469);
+            this.richTextBoxChatPrivat.TabIndex = 3;
+            this.richTextBoxChatPrivat.Text = "";
+            // 
+            // tabPage2
+            // 
+            this.tabPage2.Controls.Add(this.richTextBoxTrimiteMesajPublic);
+            this.tabPage2.Controls.Add(this.btnTrimiteMesajPublic);
+            this.tabPage2.Controls.Add(this.richTextBoxChatPublic);
+            this.tabPage2.Location = new System.Drawing.Point(4, 25);
+            this.tabPage2.Name = "tabPage2";
+            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage2.Size = new System.Drawing.Size(274, 640);
+            this.tabPage2.TabIndex = 1;
+            this.tabPage2.Text = "Chat Online";
+            this.tabPage2.UseVisualStyleBackColor = true;
             // 
             // richTextBoxTrimiteMesajPublic
             // 
@@ -150,9 +139,22 @@
             | System.Windows.Forms.AnchorStyles.Left)));
             this.richTextBoxChatPublic.Location = new System.Drawing.Point(6, 6);
             this.richTextBoxChatPublic.Name = "richTextBoxChatPublic";
+            this.richTextBoxChatPublic.ReadOnly = true;
             this.richTextBoxChatPublic.Size = new System.Drawing.Size(262, 469);
             this.richTextBoxChatPublic.TabIndex = 6;
             this.richTextBoxChatPublic.Text = "";
+            // 
+            // btnPararesteJoc
+            // 
+            this.btnPararesteJoc.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnPararesteJoc.Location = new System.Drawing.Point(1767, 12);
+            this.btnPararesteJoc.Name = "btnPararesteJoc";
+            this.btnPararesteJoc.RightToLeft = System.Windows.Forms.RightToLeft.No;
+            this.btnPararesteJoc.Size = new System.Drawing.Size(145, 46);
+            this.btnPararesteJoc.TabIndex = 2;
+            this.btnPararesteJoc.Text = "Paraseste Joc";
+            this.btnPararesteJoc.UseVisualStyleBackColor = true;
+            this.btnPararesteJoc.Click += new System.EventHandler(this.btnPararesteJoc_Click);
             // 
             // Joc
             // 
