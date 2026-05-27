@@ -33,7 +33,15 @@ namespace TablaSahSPRC
 
         private string lobbyCode;
         private CuloarePiesa culoareaMea;
-        private string numeleMeu; 
+        private string numeleMeu;
+        //=======================================================================================
+        //TEAM SPECIALA
+        // --- STAREA VIRUSULUI ---
+        private int virusX = 6; // Îl punem inițial pe pionul alb din fața Regelui
+        private int virusY = 4;
+        private int contorMutariVirus = 2; // Sare la fiecare 2 mutări
+        private int codPiesaSursaVirus = 1; // 1 = Pion (inițial are logica unui pion)
+        //=======================================================================================
 
         public Joc(ConexiuneServer conexiune, int modCurent, string cod, string numeUtilizator)
         {
@@ -55,10 +63,20 @@ namespace TablaSahSPRC
             DeseneazaTabla();
             AseazaPieseleInitiale();
 
+            // TEMA SPECIALA==========================================
+            ActualizeazaVizualVirus(-1, -1);
+            // ==========================================
+
             serverNostru.OnTablaUpdate += PrimesteUpdateDeLaAdversar;
             // Ne abonăm la noile evenimente de Chat
             serverNostru.OnChatPrivateReceived += PrimesteMesajPrivat;
             serverNostru.OnChatGlobalReceived += PrimesteMesajGlobal;
+
+            // Activăm funcția de redimensionare automată
+            this.Resize += Joc_Resize;
+
+            // Forțăm o primă redimensionare imediat cum se deschide fereastra
+            RedimensioneazaTabla();
         }
 
         // Funcția care se activează automat când serverul trimite noul vector de la adversar
@@ -208,7 +226,11 @@ namespace TablaSahSPRC
                 }
 
                 // REGULA 2: Întrebăm piesa dacă mișcarea respectă matematica ei
-                if (piesaCareSeMuta.EsteMiscareValida(coordonateSursa.X, coordonateSursa.Y, x, y, tablaLogica))
+                //TEMA SPECIALA ==================================================================
+                if (VerificaMiscare(piesaCareSeMuta, coordonateSursa.X, coordonateSursa.Y, x, y, tablaLogica))
+                //================================================================================
+                //Originala
+                //if (piesaCareSeMuta.EsteMiscareValida(coordonateSursa.X, coordonateSursa.Y, x, y, tablaLogica))
                 {
                     // === SIMULARE PENTRU ȘAH ===
                     PiesaSah piesaSalvareDestinatie = tablaLogica[x, y]; // Salvăm ce era pe destinație 
@@ -249,6 +271,50 @@ namespace TablaSahSPRC
 
                     // ==========================================================
                     // === NOU: TRIMITEM TABLA CĂTRE ADVERSAR (DUPĂ PROMOVARE) ===
+                    // ==========================================================
+                    //TEMA SPECIALA ==================================================================
+                    // --- LOGICA VIRUSULUI ---
+                    int oldVX = virusX, oldVY = virusY;
+
+                    // 1. Dacă am mutat piesa pe care stătea virusul, virusul călătorește cu ea
+                    if (coordonateSursa.X == virusX && coordonateSursa.Y == virusY)
+                    {
+                        virusX = x; virusY = y;
+                    }
+
+                    // 2. Scădem contorul. Dacă a ajuns la 0, SARE!
+                    contorMutariVirus--;
+                    if (contorMutariVirus <= 0 && virusX >= 0 && virusY >= 0)
+                    {
+                        // Luăm "ADN-ul" (modul de mutare) al piesei curente înainte să sărim
+                        if (tablaLogica[virusX, virusY] != null)
+                        {
+                            codPiesaSursaVirus = ObtineCodPiesa(tablaLogica[virusX, virusY]);
+                        }
+
+                        // Căutăm vecini la maxim 2 distanță
+                        List<Point> vecini = new List<Point>();
+                        for (int vi = Math.Max(0, virusX - 2); vi <= Math.Min(7, virusX + 2); vi++)
+                        {
+                            for (int vj = Math.Max(0, virusY - 2); vj <= Math.Min(7, virusY + 2); vj++)
+                            {
+                                if (vi == virusX && vj == virusY) continue;
+                                if (tablaLogica[vi, vj] != null) vecini.Add(new Point(vi, vj)); // Doar pe piese!
+                            }
+                        }
+
+                        // Sărim random
+                        if (vecini.Count > 0)
+                        {
+                            Random rnd = new Random();
+                            Point dest = vecini[rnd.Next(vecini.Count)];
+                            virusX = dest.X; virusY = dest.Y;
+                        }
+
+                        contorMutariVirus = 2; // Resetăm la 2 mutări
+                    }
+
+                    ActualizeazaVizualVirus(oldVX, oldVY); // Colorăm noua poziție
                     // ==========================================================
                     string stareNoua = ConversieTablaInString();
 
@@ -393,11 +459,19 @@ namespace TablaSahSPRC
                     if (piesa != null && piesa.Culoare != culoareRege)
                     {
                         // Întrebăm piesa adversă dacă poate ataca căsuța Regelui
-                        if (piesa.EsteMiscareValida(i, j, regeX, regeY, tablaCurenta))
-                        {
+                        //  if (piesa.EsteMiscareValida(i, j, regeX, regeY, tablaCurenta))
+                        // {
+                        //      return true; // Este Șah!
+                        //  }
+
+                        //TEMA SPEACIAL ==================================================================
+                        if (VerificaMiscare(piesa, i, j, regeX, regeY, tablaCurenta))
+                            {
                             return true; // Este Șah!
                         }
+                        //================================================================================
                     }
+
                 }
             }
 
@@ -427,7 +501,10 @@ namespace TablaSahSPRC
                                     continue;
 
                                 // 2. Întrebăm piesa dacă mutarea este legală matematic (ex: Calul în L)
-                                if (piesa.EsteMiscareValida(iSursa, jSursa, iDest, jDest, tablaCurenta))
+                                //  if (piesa.EsteMiscareValida(iSursa, jSursa, iDest, jDest, tablaCurenta))
+                                //TEMA SPECIALA ==================================================================
+                                if (VerificaMiscare(piesa, iSursa, jSursa, iDest, jDest, tablaCurenta))
+                                //================================================================================
                                 {
                                     // 3. Simulăm mutarea în memorie
                                     tablaCurenta[iDest, jDest] = piesa;
@@ -456,18 +533,40 @@ namespace TablaSahSPRC
             return false; // Jucătorul nu mai are nicio mutare validă
         }
 
+        //TEMA SPECIALA ==================================================================
         private void ResetareCuloareSelectie()
         {
             if (patratSelectat != null)
             {
-                if ((coordonateSursa.X + coordonateSursa.Y) % 2 == 0)
-                    patratSelectat.BackColor = Color.WhiteSmoke;
-                else
-                    patratSelectat.BackColor = Color.Black;
+                int sx = coordonateSursa.X; int sy = coordonateSursa.Y;
 
+                // Dacă deseectăm virusul, îl lăsăm verde!
+                if (sx == virusX && sy == virusY)
+                {
+                    patratSelectat.BackColor = Color.LimeGreen;
+                }
+                else
+                {
+                    if ((sx + sy) % 2 == 0) patratSelectat.BackColor = Color.WhiteSmoke;
+                    else patratSelectat.BackColor = Color.Black;
+                }
                 patratSelectat = null;
             }
         }
+        //================================================================================
+        //ORIGINALA
+        /* private void ResetareCuloareSelectie()
+         {
+             if (patratSelectat != null)
+             {
+                 if ((coordonateSursa.X + coordonateSursa.Y) % 2 == 0)
+                     patratSelectat.BackColor = Color.WhiteSmoke;
+                 else
+                     patratSelectat.BackColor = Color.Black;
+
+                 patratSelectat = null;
+             }
+         } */
 
         private void btnPararesteJoc_Click(object sender, EventArgs e)
         {
@@ -522,12 +621,23 @@ namespace TablaSahSPRC
             }
 
             // Unește toate numerele cu virgulă între ele
-            return string.Join(",", valori);
+            //ORIGINAL
+            //return string.Join(",", valori);
+            //TEMA SPECIALA ==================================================================
+            string tablaStr = string.Join(",", valori);
+            // Atașăm datele virusului despărțite prin punct și virgulă
+            return $"{tablaStr};{virusX},{virusY},{contorMutariVirus},{codPiesaSursaVirus}";
+            //================================================================================
         }
 
         public void ActualizeazaTablaDinString(string stareTabla)
-        {
-            string[] valori = stareTabla.Split(',');
+        {   //ORIGINAL
+            // string[] valori = stareTabla.Split(',');
+            //TEMA SPECIALA ==================================================================
+            // Despărțim tabla de datele virusului
+            string[] bucati = stareTabla.Split(';');
+            string[] valori = bucati[0].Split(',');
+            //================================================================================
             int index = 0;
 
             for (int i = 0; i < 8; i++)
@@ -581,8 +691,61 @@ namespace TablaSahSPRC
                     }
                 }
             }
+            // Actualizăm starea virusului pe ecranul nostru, pe baza datelor de la adversar
+            if (bucati.Length > 1)
+            {
+                string[] dateVirus = bucati[1].Split(',');
+                int vechiX = virusX; int vechiY = virusY;
+
+                virusX = int.Parse(dateVirus[0]);
+                virusY = int.Parse(dateVirus[1]);
+                contorMutariVirus = int.Parse(dateVirus[2]);
+                codPiesaSursaVirus = int.Parse(dateVirus[3]);
+
+                ActualizeazaVizualVirus(vechiX, vechiY);
+            }
+
         }
 
+        private void RedimensioneazaTabla()
+        {
+            // Dacă tabla nu a fost încă desenată, ne oprim (evităm erori la pornire)
+            if (patrateleVizuale[0, 0] == null) return;
+
+            // 1. Lăsăm un spațiu în stânga egal cu lățimea chat-ului + 20 pixeli margine
+            int spatiuStanga = tabControl1.Right + 20;
+
+            // 2. Calculăm spațiul disponibil pentru tablă
+            int latimeDisponibila = this.ClientSize.Width - spatiuStanga - 20;
+            int inaltimeDisponibila = this.ClientSize.Height - 40;
+
+            // 3. Mărimea unui pătrățel este minimul necesar ca să încapă 8x8 perfect
+            dimensiunePatrat = Math.Min(latimeDisponibila / 8, inaltimeDisponibila / 8);
+
+            // Evităm ca pătrățelele să devină prea mici sau să dea eroare dacă fereastra e prea mică
+            if (dimensiunePatrat < 15) return;
+
+            // 4. Parcurgem toată tabla și actualizăm noile poziții și mărimi
+            for (int i = 0; i < 8; i++)
+            {
+                for (int j = 0; j < 8; j++)
+                {
+                    patrateleVizuale[i, j].Size = new Size(dimensiunePatrat, dimensiunePatrat);
+
+                    // Repoziționăm pătratul
+                    patrateleVizuale[i, j].Location = new Point(
+                        j * dimensiunePatrat + spatiuStanga,
+                        i * dimensiunePatrat + 20
+                    );
+                }
+            }
+        }
+
+        private void Joc_Resize(object sender, EventArgs e)
+        {
+            // Apelăm funcția noastră de fiecare dată când se trage de margini
+            RedimensioneazaTabla();
+        }
         private void Joc_Load(object sender, EventArgs e)
         {
             // Păstrat pentru eventuale inițializări la încărcarea form-ului
@@ -661,5 +824,63 @@ namespace TablaSahSPRC
                 richTextBoxChatPrivat.ScrollToCaret(); // Dă scroll automat
             });
         }
+
+        //TEMA SPECIALA
+        //===========================================================================================
+        // 1. Desenează și șterge urma virusului
+        private void ActualizeazaVizualVirus(int oldX, int oldY)
+        {
+            // Resetăm pătratul vechi la culoarea de tablă de șah
+            if (oldX >= 0 && oldY >= 0 && patrateleVizuale[oldX, oldY] != null)
+            {
+                if ((oldX + oldY) % 2 == 0) patrateleVizuale[oldX, oldY].BackColor = Color.WhiteSmoke;
+                else patrateleVizuale[oldX, oldY].BackColor = Color.Black;
+            }
+
+            // Punem culoarea toxică pe noul pătrat
+            if (virusX >= 0 && virusY >= 0 && patrateleVizuale[virusX, virusY] != null)
+            {
+                patrateleVizuale[virusX, virusY].BackColor = Color.LimeGreen;
+            }
+        }
+
+        // 2. Funcția care decide CUM mută o piesă (AICI ARE LOC MAGIA VIRUSULUI)
+        private bool VerificaMiscare(PiesaSah piesa, int startX, int startY, int endX, int endY, PiesaSah[,] tabla)
+        {
+            // Dacă piesa de pe care dăm click este INFECTATĂ
+            if (startX == virusX && startY == virusY && codPiesaSursaVirus != 0)
+            {
+                // Creăm o piesă "Fantomă" cu logica luată din virus, dar cu culoarea piesei noastre
+                PiesaSah piesaVirusata = CreazaPiesaDinCod(codPiesaSursaVirus, piesa.Culoare);
+                return piesaVirusata.EsteMiscareValida(startX, startY, endX, endY, tabla);
+            }
+
+            // Dacă nu e infectată, folosește logica ei normală
+            return piesa.EsteMiscareValida(startX, startY, endX, endY, tabla);
+        }
+
+        // 3. Ajută să obținem codul piesei de pe care sare virusul
+        private int ObtineCodPiesa(PiesaSah piesa)
+        {
+            if (piesa is Pion) return 1;
+            if (piesa is Cal) return 2;
+            if (piesa is Nebun) return 3;
+            if (piesa is Turn) return 4;
+            if (piesa is Regina) return 5;
+            if (piesa is Rege) return 6;
+            return 0;
+        }
+
+        // 4. Ajută să creăm piesa "Fantomă"
+        private PiesaSah CreazaPiesaDinCod(int cod, CuloarePiesa culoare)
+        {
+            if (cod == 1) return new Pion(culoare);
+            if (cod == 2) return new Cal(culoare);
+            if (cod == 3) return new Nebun(culoare);
+            if (cod == 4) return new Turn(culoare);
+            if (cod == 5) return new Regina(culoare);
+            return new Rege(culoare);
+        }
+        //===========================================================================================
     }
 }
